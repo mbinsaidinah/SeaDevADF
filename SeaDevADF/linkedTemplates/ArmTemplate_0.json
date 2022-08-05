@@ -1,0 +1,497 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "SeaDevADF"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
+		"AzureSQLServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureSQLServer'"
+		},
+		"LocalSQLServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LocalSQLServer'"
+		},
+		"SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId": {
+			"type": "string",
+			"defaultValue": "/subscriptions/887c8aa5-917a-430d-9235-90d8e4950357/resourcegroups/MySelfTraingRG/providers/Microsoft.DataFactory/factories/SelfADF01/integrationruntimes/MSSQLSelfHostedIR"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSQLServer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "DB inside azure sql server",
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureSQLServer_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SharedMsSQLLocalIR')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"description": "Shared my local sql server self hosted",
+				"typeProperties": {
+					"linkedInfo": {
+						"resourceId": "[parameters('SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId')]",
+						"authorizationType": "Rbac"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSQL')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSQLServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "AirlinePerformance-OLTP"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "DimDate"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSQLServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BlobStorage')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "output"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalSQLServer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Self hosted sql server",
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('LocalSQLServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "SharedMsSQLLocalIR",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/SharedMsSQLLocalIR')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalAdventureWork')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalSQLServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "AdventureWorksDW2019"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalSQLServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "select * from [dbo].[DimDate]",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlServerSink",
+								"preCopyScript": "truncate table [dbo].[DimDate]",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "DateKey",
+											"type": "Int32",
+											"physicalType": "int"
+										},
+										"sink": {
+											"name": "DateKey",
+											"type": "Int32",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "FullDateAlternateKey",
+											"type": "DateTime",
+											"physicalType": "date"
+										},
+										"sink": {
+											"name": "FullDateAlternateKey",
+											"type": "DateTime",
+											"physicalType": "INT_96"
+										}
+									},
+									{
+										"source": {
+											"name": "DayNumberOfWeek",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "DayNumberOfWeek",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "EnglishDayNameOfWeek",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "EnglishDayNameOfWeek",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "SpanishDayNameOfWeek",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "SpanishDayNameOfWeek",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "FrenchDayNameOfWeek",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "FrenchDayNameOfWeek",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "DayNumberOfMonth",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "DayNumberOfMonth",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "DayNumberOfYear",
+											"type": "Int16",
+											"physicalType": "smallint"
+										},
+										"sink": {
+											"name": "DayNumberOfYear",
+											"type": "Int16",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "WeekNumberOfYear",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "WeekNumberOfYear",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "EnglishMonthName",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "EnglishMonthName",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "SpanishMonthName",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "SpanishMonthName",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "FrenchMonthName",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "FrenchMonthName",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "MonthNumberOfYear",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "MonthNumberOfYear",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "CalendarQuarter",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "CalendarQuarter",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "CalendarYear",
+											"type": "Int16",
+											"physicalType": "smallint"
+										},
+										"sink": {
+											"name": "CalendarYear",
+											"type": "Int16",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "CalendarSemester",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "CalendarSemester",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "FiscalQuarter",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "FiscalQuarter",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "FiscalYear",
+											"type": "Int16",
+											"physicalType": "smallint"
+										},
+										"sink": {
+											"name": "FiscalYear",
+											"type": "Int16",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "FiscalSemester",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "FiscalSemester",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "LocalAdventureWork",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSQL",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-07-30T10:35:26Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/LocalAdventureWork')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSQL')]"
+			]
+		}
+	]
+}
