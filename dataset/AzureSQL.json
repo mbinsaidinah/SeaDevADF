@@ -1,0 +1,20 @@
+{
+	"name": "AzureSQL",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSQLServer",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"DBName": "AirlinePerformance-OLTP"
+			}
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "DimDate"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
