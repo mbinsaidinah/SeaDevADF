@@ -5,6 +5,9 @@
 			"referenceName": "AzureBlobStorage1",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "L200 Hand-on lab"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {

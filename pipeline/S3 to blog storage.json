@@ -545,6 +545,9 @@
 				"defaultValue": "mbinsaidinah@microsoft.com"
 			}
 		},
+		"folder": {
+			"name": "L200 Hand-on lab"
+		},
 		"annotations": []
 	}
 }
