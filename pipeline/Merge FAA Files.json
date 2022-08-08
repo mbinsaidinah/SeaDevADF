@@ -1,0 +1,35 @@
+{
+	"name": "Merge FAA Files",
+	"properties": {
+		"activities": [
+			{
+				"name": "Run FAA Hive Merge",
+				"type": "HDInsightHive",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"scriptPath": "input/FAAMerge.hql",
+					"scriptLinkedService": {
+						"referenceName": "AzureBlobStorage1",
+						"type": "LinkedServiceReference"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "HDI_ADFLab",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "L200 Hand-on lab"
+		},
+		"annotations": []
+	}
+}
