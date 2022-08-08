@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "SeaDevADF"
 		},
+		"AmazonS31_secretAccessKey": {
+			"value": ""
+		},
 		"AzureBlobStorage1_connectionString": {
 			"value": ""
 		},
@@ -12,6 +15,18 @@
 			"value": ""
 		},
 		"LocalSQLServer_connectionString": {
+			"value": ""
+		},
+		"AmazonS31_properties_typeProperties_accessKeyId": {
+			"value": "AKIAVIMR7B66JW7MWC5M"
+		},
+		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"value": "adflabsqlgg2qq.database.windows.net"
+		},
+		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+			"value": "labadmin"
+		},
+		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
 			"value": ""
 		},
 		"SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId": {
