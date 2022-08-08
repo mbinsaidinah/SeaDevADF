@@ -55,9 +55,13 @@
 			"type": "string",
 			"defaultValue": "72f988bf-86f1-41af-91ab-2d7cd011db47"
 		},
-		"HDI_ADFLab_properties_typeProperties_clusterSshUserName": {
+		"HDI_ADFLab_properties_typeProperties_clusterUserName": {
 			"type": "string",
 			"defaultValue": "labadmin"
+		},
+		"HDI_ADFLab_properties_typeProperties_clusterSshUserName": {
+			"type": "string",
+			"defaultValue": "sshuser"
 		},
 		"HttpServer1_properties_typeProperties_url": {
 			"type": "string",
@@ -155,6 +159,9 @@
 					},
 					"HDI_ADFLab_properties_typeProperties_tenant": {
 						"value": "[parameters('HDI_ADFLab_properties_typeProperties_tenant')]"
+					},
+					"HDI_ADFLab_properties_typeProperties_clusterUserName": {
+						"value": "[parameters('HDI_ADFLab_properties_typeProperties_clusterUserName')]"
 					},
 					"HDI_ADFLab_properties_typeProperties_clusterSshUserName": {
 						"value": "[parameters('HDI_ADFLab_properties_typeProperties_clusterSshUserName')]"

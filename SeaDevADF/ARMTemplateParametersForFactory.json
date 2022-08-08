@@ -41,8 +41,11 @@
 		"HDI_ADFLab_properties_typeProperties_tenant": {
 			"value": "72f988bf-86f1-41af-91ab-2d7cd011db47"
 		},
-		"HDI_ADFLab_properties_typeProperties_clusterSshUserName": {
+		"HDI_ADFLab_properties_typeProperties_clusterUserName": {
 			"value": "labadmin"
+		},
+		"HDI_ADFLab_properties_typeProperties_clusterSshUserName": {
+			"value": "sshuser"
 		},
 		"HttpServer1_properties_typeProperties_url": {
 			"value": "https://weather-b362.restdb.io/rest/random-weather-dec-2016"
