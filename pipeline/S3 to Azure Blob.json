@@ -1,9 +1,9 @@
 {
-	"name": "S3 to blog storage",
+	"name": "S3 to Azure Blob",
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy data1",
+				"name": "S3 to Azure Blob",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -475,7 +475,7 @@
 				"type": "WebActivity",
 				"dependsOn": [
 					{
-						"activity": "Copy data1",
+						"activity": "S3 to Azure Blob",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -496,11 +496,8 @@
 						"Content-Type": "Application/json"
 					},
 					"body": {
-						"dataFactoryName": "@{pipeline().DataFactory}",
-						"successtype": "Succeeded",
-						"message": "@{activity('S3 to Azure Blob').output.dataWritten}",
-						"pipelineName": "@{pipeline().Pipeline}",
-						"recipient": "@{pipeline().parameters.recipient}"
+						"value": "{\"dataFactoryName\":\"@{pipeline().DataFactory}\",\"successtype\":\"Succeeded\",\"message\":\"@{activity('S3 to Azure Blob').output.dataWritten}\",\"pipelineName\":\"@{pipeline().Pipeline}\",\"recipient\":\"@{pipeline().parameters.recipient}\"}",
+						"type": "Expression"
 					}
 				}
 			},
@@ -509,7 +506,7 @@
 				"type": "WebActivity",
 				"dependsOn": [
 					{
-						"activity": "Copy data1",
+						"activity": "S3 to Azure Blob",
 						"dependencyConditions": [
 							"Failed"
 						]
@@ -530,11 +527,8 @@
 						"Content-Type": "Application/json"
 					},
 					"body": {
-						"dataFactoryName": "@{pipeline().DataFactory}",
-						"successtype": "Failed",
-						"message": "@{activity('S3 to Azure Blob').error.message}",
-						"pipelineName": "@{pipeline().Pipeline}",
-						"recipient": "@{pipeline().parameters.recipient}"
+						"value": "{\"dataFactoryName\":\"@{pipeline().DataFactory}\",\"successtype\":\"Failed\",\"message\":\"@{activity('S3 to Azure Blob').error.message}\",\"pipelineName\":\"@{pipeline().Pipeline}\",\"recipient\":\"@{pipeline().parameters.recipient}\"}",
+						"type": "Expression"
 					}
 				}
 			}
