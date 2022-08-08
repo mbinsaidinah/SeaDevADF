@@ -1,0 +1,35 @@
+{
+	"name": "HDI_ADFLab",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "HDInsightOnDemand",
+		"typeProperties": {
+			"clusterType": "hadoop",
+			"clusterSize": 4,
+			"timeToLive": "00:15:00",
+			"version": "4.0",
+			"hostSubscriptionId": "887c8aa5-917a-430d-9235-90d8e4950357",
+			"clusterResourceGroup": "SeaDev2",
+			"servicePrincipalId": "1583fab3-71d3-45e2-ad9d-00aa8c5a4d1e",
+			"osType": "Linux",
+			"tenant": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+			"clusterNamePrefix": "",
+			"clusterSshUserName": "labadmin",
+			"additionalLinkedServiceNames": [
+				{
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				}
+			],
+			"linkedServiceName": {
+				"referenceName": "AzureBlobStorage1",
+				"type": "LinkedServiceReference"
+			},
+			"headNodeSize": "",
+			"dataNodeSize": "",
+			"zookeeperNodeSize": "",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDdBMDBBQkQ0LUI5RTYtNEJCNy05QjM3LUFCMTY5MzcxN0I5QV83ZTZjNGQ5Yy05MTFiLTQ0MjctOGY1ZS1jNmFiMzQwMGE3NzYiDQp9"
+		}
+	}
+}
