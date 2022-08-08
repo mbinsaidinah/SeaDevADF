@@ -202,6 +202,9 @@
 					"referenceName": "AzureBlobStorage1",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "L200 Hand-on lab"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -391,6 +394,9 @@
 				"linkedServiceName": {
 					"referenceName": "AmazonS31",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "L200 Hand-on lab"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -1127,6 +1133,9 @@
 						"type": "string",
 						"defaultValue": "mbinsaidinah@microsoft.com"
 					}
+				},
+				"folder": {
+					"name": "L200 Hand-on lab"
 				},
 				"annotations": []
 			},
