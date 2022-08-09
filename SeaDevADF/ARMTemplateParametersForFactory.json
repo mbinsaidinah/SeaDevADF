@@ -56,6 +56,9 @@
 		"HttpServer1_properties_typeProperties_url": {
 			"value": "https://weather-b362.restdb.io/rest/random-weather-dec-2016"
 		},
+		"Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient": {
+			"value": "mbinsaidinah@microsoft.com"
+		},
 		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
 			"value": "adflabsqlgg2qq.database.windows.net"
 		},
@@ -67,9 +70,6 @@
 		},
 		"SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId": {
 			"value": "/subscriptions/887c8aa5-917a-430d-9235-90d8e4950357/resourcegroups/MySelfTraingRG/providers/Microsoft.DataFactory/factories/SelfADF01/integrationruntimes/MSSQLSelfHostedIR"
-		},
-		"Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient": {
-			"value": "mbinsaidinah@microsoft.com"
 		}
 	}
 }
