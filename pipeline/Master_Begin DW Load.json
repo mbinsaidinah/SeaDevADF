@@ -551,6 +551,22 @@
 					},
 					"waitOnCompletion": true
 				}
+			},
+			{
+				"name": "Exec DW",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Exec Weather to Blob Copy",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitOnCompletion": true
+				}
 			}
 		],
 		"parameters": {
