@@ -565,6 +565,10 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Load Data Warehouse",
+						"type": "PipelineReference"
+					},
 					"waitOnCompletion": true
 				}
 			}
