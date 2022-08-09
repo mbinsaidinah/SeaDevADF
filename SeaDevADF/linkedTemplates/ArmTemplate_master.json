@@ -90,6 +90,10 @@
 			"type": "string",
 			"defaultValue": "/subscriptions/887c8aa5-917a-430d-9235-90d8e4950357/resourcegroups/MySelfTraingRG/providers/Microsoft.DataFactory/factories/SelfADF01/integrationruntimes/MSSQLSelfHostedIR"
 		},
+		"Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient": {
+			"type": "string",
+			"defaultValue": "mbinsaidinah@microsoft.com"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -197,6 +201,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient": {
+						"value": "[parameters('Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient')]"
 					}
 				}
 			},
