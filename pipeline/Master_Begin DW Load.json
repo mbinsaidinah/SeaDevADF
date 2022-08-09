@@ -1,5 +1,5 @@
 {
-	"name": "S3 to Azure Blob",
+	"name": "Master_Begin DW Load",
 	"properties": {
 		"activities": [
 			{
