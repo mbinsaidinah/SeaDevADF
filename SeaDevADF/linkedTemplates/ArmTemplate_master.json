@@ -11,6 +11,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'secretAccessKey' of 'AmazonS31'"
 		},
+		"Azure DW DB_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Azure DW DB'"
+		},
+		"Azure ODS DB_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Azure ODS DB'"
+		},
 		"AzureBlobStorage1_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
@@ -112,6 +120,12 @@
 					"AmazonS31_secretAccessKey": {
 						"value": "[parameters('AmazonS31_secretAccessKey')]"
 					},
+					"Azure DW DB_connectionString": {
+						"value": "[parameters('Azure DW DB_connectionString')]"
+					},
+					"Azure ODS DB_connectionString": {
+						"value": "[parameters('Azure ODS DB_connectionString')]"
+					},
 					"AzureBlobStorage1_connectionString": {
 						"value": "[parameters('AzureBlobStorage1_connectionString')]"
 					},
@@ -169,6 +183,26 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "SeaDevADF_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'SeaDevADF_ArmTemplate_0')]"
+			]
 		}
 	]
 }

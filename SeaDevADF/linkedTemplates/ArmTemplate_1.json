@@ -1,0 +1,1023 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "SeaDevADF"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Merge FAA Files')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Run FAA Hive Merge",
+						"type": "HDInsightHive",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"scriptPath": "input/FAAMerge.hql",
+							"scriptLinkedService": {
+								"referenceName": "AzureBlobStorage1",
+								"type": "LinkedServiceReference"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "HDI_ADFLab",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "L200 Hand-on lab"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Weather to Blob Copy')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Weather to Blob Copy",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "HttpJson",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "BlobWeather",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "L200 Hand-on lab"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalAdventureWork')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalSQLServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "AdventureWorksDW2019"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/S3 to Azure Blob')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "S3 to Azure Blob",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AmazonS3ReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "N-Number",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "N-Number",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Serial Number",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Serial Number",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "MFR MDL Code",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "MFR MDL Code",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Eng MFR Code",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Eng MFR Code",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Year MFR",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Year MFR",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Type Registrant",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Type Registrant",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Name",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Name",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Street 1",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Street 1",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Street2",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Street2",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "City",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "City",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "State",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "State",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "ZIP",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "ZIP",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Region",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Region",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "County ",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "County ",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Country",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Country",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Last Activity Date",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Last Activity Date",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Cert Issue Date",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Cert Issue Date",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Certification Requested ",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Certification Requested ",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Type Aircraft",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Type Aircraft",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Type Engine",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Type Engine",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Status Code",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Status Code",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Mode S Code",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Mode S Code",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Fractional  Ownership",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Fractional  Ownership",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Airworthiness Date",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Airworthiness Date",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Other Name 1",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Other Name 1",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Other Name 2",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Other Name 2",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Other Name 3",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Other Name 3",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Other Name 4",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Other Name 4",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Other Name 5",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Other Name 5",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Expiration Date",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Expiration Date",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Unique ID",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Unique ID",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Kit MFR Code",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Kit MFR Code",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Kit Model",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Kit Model",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Mose S Code Hex",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Mose S Code Hex",
+											"type": "String",
+											"physicalType": "String"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "S3DelimitedText1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "BlobMasterFAA_File",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Send success email",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "S3 to Azure Blob",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://prod-06.eastus2.logic.azure.com:443/workflows/4ebeb981688c449eb7c3da1fcc83139f/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=lqHDrYyyDs9KdFSv3Q0Afpx_ut3nsgj73cDf59v_fVc",
+							"method": "POST",
+							"headers": {
+								"Content-Type": "Application/json"
+							},
+							"body": {
+								"value": "{\"dataFactoryName\":\"@{pipeline().DataFactory}\",\"successtype\":\"Succeeded\",\"message\":\"@{activity('S3 to Azure Blob').output.dataWritten}\",\"pipelineName\":\"@{pipeline().Pipeline}\",\"recipient\":\"@{pipeline().parameters.recipient}\"}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Send failed email",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "S3 to Azure Blob",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://prod-06.eastus2.logic.azure.com:443/workflows/4ebeb981688c449eb7c3da1fcc83139f/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=lqHDrYyyDs9KdFSv3Q0Afpx_ut3nsgj73cDf59v_fVc",
+							"method": "POST",
+							"headers": {
+								"Content-Type": "Application/json"
+							},
+							"body": {
+								"value": "{\"dataFactoryName\":\"@{pipeline().DataFactory}\",\"successtype\":\"Failed\",\"message\":\"@{activity('S3 to Azure Blob').error.message}\",\"pipelineName\":\"@{pipeline().Pipeline}\",\"recipient\":\"@{pipeline().parameters.recipient}\"}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Exec Weather to Blob Copy",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Send success email",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Weather to Blob Copy",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"recipient": {
+						"type": "string",
+						"defaultValue": "mbinsaidinah@microsoft.com"
+					}
+				},
+				"folder": {
+					"name": "L200 Hand-on lab"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Weather to Blob Copy')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "select * from [dbo].[DimDate]",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SqlServerSink",
+								"preCopyScript": "truncate table [dbo].[DimDate]",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "DateKey",
+											"type": "Int32",
+											"physicalType": "int"
+										},
+										"sink": {
+											"name": "DateKey",
+											"type": "Int32",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "FullDateAlternateKey",
+											"type": "DateTime",
+											"physicalType": "date"
+										},
+										"sink": {
+											"name": "FullDateAlternateKey",
+											"type": "DateTime",
+											"physicalType": "INT_96"
+										}
+									},
+									{
+										"source": {
+											"name": "DayNumberOfWeek",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "DayNumberOfWeek",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "EnglishDayNameOfWeek",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "EnglishDayNameOfWeek",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "SpanishDayNameOfWeek",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "SpanishDayNameOfWeek",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "FrenchDayNameOfWeek",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "FrenchDayNameOfWeek",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "DayNumberOfMonth",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "DayNumberOfMonth",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "DayNumberOfYear",
+											"type": "Int16",
+											"physicalType": "smallint"
+										},
+										"sink": {
+											"name": "DayNumberOfYear",
+											"type": "Int16",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "WeekNumberOfYear",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "WeekNumberOfYear",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "EnglishMonthName",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "EnglishMonthName",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "SpanishMonthName",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "SpanishMonthName",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "FrenchMonthName",
+											"type": "String",
+											"physicalType": "nvarchar"
+										},
+										"sink": {
+											"name": "FrenchMonthName",
+											"type": "String",
+											"physicalType": "UTF8"
+										}
+									},
+									{
+										"source": {
+											"name": "MonthNumberOfYear",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "MonthNumberOfYear",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "CalendarQuarter",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "CalendarQuarter",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "CalendarYear",
+											"type": "Int16",
+											"physicalType": "smallint"
+										},
+										"sink": {
+											"name": "CalendarYear",
+											"type": "Int16",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "CalendarSemester",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "CalendarSemester",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "FiscalQuarter",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "FiscalQuarter",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "FiscalYear",
+											"type": "Int16",
+											"physicalType": "smallint"
+										},
+										"sink": {
+											"name": "FiscalYear",
+											"type": "Int16",
+											"physicalType": "INT_32"
+										}
+									},
+									{
+										"source": {
+											"name": "FiscalSemester",
+											"type": "Byte",
+											"physicalType": "tinyint"
+										},
+										"sink": {
+											"name": "FiscalSemester",
+											"type": "Byte",
+											"physicalType": "INT_32"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "LocalAdventureWork",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSQL",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-07-30T10:35:26Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/LocalAdventureWork')]"
+			]
+		}
+	]
+}
