@@ -12,7 +12,7 @@
 		"type": "SqlServer",
 		"typeProperties": {
 			"connectionString": "integrated security=False;data source=MY-FIKRI5420;initial catalog=@{linkedService().DBName};user id=sa",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI0MjdhZTkyMy1iMzE4LTRjY2EtOTNiMC1mMzQxYjE0ZGEyNGYiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJkYTdkMDg4Ny01NjY1LTQ4Y2UtOTI4Ni1mMmFiMmUzNTE1NzgiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
 			"referenceName": "SharedMsSQLLocalIR",
