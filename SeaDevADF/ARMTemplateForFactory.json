@@ -27,18 +27,6 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureSQLServer'"
 		},
-		"HDI_ADFLab_clusterPassword": {
-			"type": "secureString",
-			"metadata": "Secure string for 'clusterPassword' of 'HDI_ADFLab'"
-		},
-		"HDI_ADFLab_clusterSshPassword": {
-			"type": "secureString",
-			"metadata": "Secure string for 'clusterSshPassword' of 'HDI_ADFLab'"
-		},
-		"HDI_ADFLab_servicePrincipalKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'servicePrincipalKey' of 'HDI_ADFLab'"
-		},
 		"LocalSQLServer_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'LocalSQLServer'"
@@ -47,48 +35,9 @@
 			"type": "string",
 			"defaultValue": "AKIAVIMR7B66JW7MWC5M"
 		},
-		"HDI_ADFLab_properties_typeProperties_hostSubscriptionId": {
-			"type": "string",
-			"defaultValue": "887c8aa5-917a-430d-9235-90d8e4950357"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterResourceGroup": {
-			"type": "string",
-			"defaultValue": "SeaDev2"
-		},
-		"HDI_ADFLab_properties_typeProperties_servicePrincipalId": {
-			"type": "string",
-			"defaultValue": "1583fab3-71d3-45e2-ad9d-00aa8c5a4d1e"
-		},
-		"HDI_ADFLab_properties_typeProperties_tenant": {
-			"type": "string",
-			"defaultValue": "72f988bf-86f1-41af-91ab-2d7cd011db47"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterUserName": {
-			"type": "string",
-			"defaultValue": "labadmin"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterSshUserName": {
-			"type": "string",
-			"defaultValue": "sshuser"
-		},
 		"HttpServer1_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://weather-b362.restdb.io/rest/random-weather-dec-2016"
-		},
-		"Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient": {
-			"type": "string",
-			"defaultValue": "mbinsaidinah@microsoft.com"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"type": "string",
-			"defaultValue": "adflabsqlgg2qq.database.windows.net"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
-			"type": "string",
-			"defaultValue": "labadmin"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
-			"type": "secureString"
 		},
 		"SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId": {
 			"type": "string",
@@ -1531,51 +1480,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Merge FAA Files')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Run FAA Hive Merge",
-						"type": "HDInsightHive",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"scriptPath": "input/FAAMerge.hql",
-							"scriptLinkedService": {
-								"referenceName": "AzureBlobStorage1",
-								"type": "LinkedServiceReference"
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "HDI_ADFLab",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"folder": {
-					"name": "L200 Hand-on lab"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]",
-				"[concat(variables('factoryId'), '/linkedServices/HDI_ADFLab')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/Weather to Blob Copy')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -2597,57 +2501,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/HDI_ADFLab')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "HDInsightOnDemand",
-				"typeProperties": {
-					"clusterType": "hadoop",
-					"clusterSize": 4,
-					"timeToLive": "00:15:00",
-					"version": "4.0",
-					"hostSubscriptionId": "[parameters('HDI_ADFLab_properties_typeProperties_hostSubscriptionId')]",
-					"clusterResourceGroup": "[parameters('HDI_ADFLab_properties_typeProperties_clusterResourceGroup')]",
-					"servicePrincipalId": "[parameters('HDI_ADFLab_properties_typeProperties_servicePrincipalId')]",
-					"osType": "Linux",
-					"tenant": "[parameters('HDI_ADFLab_properties_typeProperties_tenant')]",
-					"clusterNamePrefix": "",
-					"clusterUserName": "[parameters('HDI_ADFLab_properties_typeProperties_clusterUserName')]",
-					"clusterPassword": {
-						"type": "SecureString",
-						"value": "[parameters('HDI_ADFLab_clusterPassword')]"
-					},
-					"clusterSshUserName": "[parameters('HDI_ADFLab_properties_typeProperties_clusterSshUserName')]",
-					"clusterSshPassword": {
-						"type": "SecureString",
-						"value": "[parameters('HDI_ADFLab_clusterSshPassword')]"
-					},
-					"servicePrincipalKey": {
-						"type": "SecureString",
-						"value": "[parameters('HDI_ADFLab_servicePrincipalKey')]"
-					},
-					"additionalLinkedServiceNames": [
-						{
-							"referenceName": "AzureBlobStorage1",
-							"type": "LinkedServiceReference"
-						}
-					],
-					"linkedServiceName": {
-						"referenceName": "AzureBlobStorage1",
-						"type": "LinkedServiceReference"
-					},
-					"headNodeSize": "",
-					"dataNodeSize": "",
-					"zookeeperNodeSize": ""
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/HttpServer1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -2657,17 +2510,7 @@
 				"typeProperties": {
 					"url": "[parameters('HttpServer1_properties_typeProperties_url')]",
 					"enableServerCertificateValidation": true,
-					"authenticationType": "Anonymous",
-					"authHeaders": {
-						"X-API-Key": {
-							"type": "SecureString",
-							"value": "**********"
-						},
-						"Authorization": {
-							"type": "SecureString",
-							"value": "**********"
-						}
-					}
+					"authenticationType": "Anonymous"
 				}
 			},
 			"dependsOn": []
@@ -2698,81 +2541,11 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Daily-DW Load Trigger')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "Master_Begin DW Load",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"recipient": "[parameters('Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient')]"
-						}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2022-08-09T07:21:00Z",
-						"endTime": "2022-08-09T15:30:00Z",
-						"timeZone": "UTC",
-						"schedule": {
-							"hours": [
-								12
-							]
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Master_Begin DW Load')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/IR-SSIS')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "Managed",
-				"description": "SSIS",
-				"typeProperties": {
-					"computeProperties": {
-						"location": "East US 2",
-						"nodeSize": "Standard_D4_v3",
-						"numberOfNodes": 2,
-						"maxParallelExecutionsPerNode": 4
-					},
-					"ssisProperties": {
-						"catalogInfo": {
-							"catalogServerEndpoint": "[parameters('IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]",
-							"catalogAdminUserName": "[parameters('IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]",
-							"catalogAdminPassword": {
-								"type": "SecureString",
-								"value": "[parameters('IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
-							},
-							"catalogPricingTier": "S1"
-						},
-						"edition": "Standard",
-						"licenseType": "LicenseIncluded"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/SharedMsSQLLocalIR')]",
 			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"type": "SelfHosted",
-				"description": "Shared my local sql server self hosted",
 				"typeProperties": {
 					"linkedInfo": {
 						"resourceId": "[parameters('SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId')]",

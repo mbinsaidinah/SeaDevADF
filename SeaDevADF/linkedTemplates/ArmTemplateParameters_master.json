@@ -20,53 +20,14 @@
 		"AzureSQLServer_connectionString": {
 			"value": ""
 		},
-		"HDI_ADFLab_clusterPassword": {
-			"value": ""
-		},
-		"HDI_ADFLab_clusterSshPassword": {
-			"value": ""
-		},
-		"HDI_ADFLab_servicePrincipalKey": {
-			"value": ""
-		},
 		"LocalSQLServer_connectionString": {
 			"value": ""
 		},
 		"AmazonS31_properties_typeProperties_accessKeyId": {
 			"value": "AKIAVIMR7B66JW7MWC5M"
 		},
-		"HDI_ADFLab_properties_typeProperties_hostSubscriptionId": {
-			"value": "887c8aa5-917a-430d-9235-90d8e4950357"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterResourceGroup": {
-			"value": "SeaDev2"
-		},
-		"HDI_ADFLab_properties_typeProperties_servicePrincipalId": {
-			"value": "1583fab3-71d3-45e2-ad9d-00aa8c5a4d1e"
-		},
-		"HDI_ADFLab_properties_typeProperties_tenant": {
-			"value": "72f988bf-86f1-41af-91ab-2d7cd011db47"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterUserName": {
-			"value": "labadmin"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterSshUserName": {
-			"value": "sshuser"
-		},
 		"HttpServer1_properties_typeProperties_url": {
 			"value": "https://weather-b362.restdb.io/rest/random-weather-dec-2016"
-		},
-		"Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient": {
-			"value": "mbinsaidinah@microsoft.com"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"value": "adflabsqlgg2qq.database.windows.net"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
-			"value": "labadmin"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
-			"value": ""
 		},
 		"SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId": {
 			"value": "/subscriptions/887c8aa5-917a-430d-9235-90d8e4950357/resourcegroups/MySelfTraingRG/providers/Microsoft.DataFactory/factories/SelfADF01/integrationruntimes/MSSQLSelfHostedIR"

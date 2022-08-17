@@ -27,18 +27,6 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureSQLServer'"
 		},
-		"HDI_ADFLab_clusterPassword": {
-			"type": "secureString",
-			"metadata": "Secure string for 'clusterPassword' of 'HDI_ADFLab'"
-		},
-		"HDI_ADFLab_clusterSshPassword": {
-			"type": "secureString",
-			"metadata": "Secure string for 'clusterSshPassword' of 'HDI_ADFLab'"
-		},
-		"HDI_ADFLab_servicePrincipalKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'servicePrincipalKey' of 'HDI_ADFLab'"
-		},
 		"LocalSQLServer_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'LocalSQLServer'"
@@ -51,44 +39,9 @@
 			"type": "string",
 			"defaultValue": "https://weather-b362.restdb.io/rest/random-weather-dec-2016"
 		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"type": "string",
-			"defaultValue": "adflabsqlgg2qq.database.windows.net"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
-			"type": "string",
-			"defaultValue": "labadmin"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
-			"type": "secureString"
-		},
 		"SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId": {
 			"type": "string",
 			"defaultValue": "/subscriptions/887c8aa5-917a-430d-9235-90d8e4950357/resourcegroups/MySelfTraingRG/providers/Microsoft.DataFactory/factories/SelfADF01/integrationruntimes/MSSQLSelfHostedIR"
-		},
-		"HDI_ADFLab_properties_typeProperties_hostSubscriptionId": {
-			"type": "string",
-			"defaultValue": "887c8aa5-917a-430d-9235-90d8e4950357"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterResourceGroup": {
-			"type": "string",
-			"defaultValue": "SeaDev2"
-		},
-		"HDI_ADFLab_properties_typeProperties_servicePrincipalId": {
-			"type": "string",
-			"defaultValue": "1583fab3-71d3-45e2-ad9d-00aa8c5a4d1e"
-		},
-		"HDI_ADFLab_properties_typeProperties_tenant": {
-			"type": "string",
-			"defaultValue": "72f988bf-86f1-41af-91ab-2d7cd011db47"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterUserName": {
-			"type": "string",
-			"defaultValue": "labadmin"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterSshUserName": {
-			"type": "string",
-			"defaultValue": "sshuser"
 		}
 	},
 	"variables": {
@@ -206,48 +159,7 @@
 				"typeProperties": {
 					"url": "[parameters('HttpServer1_properties_typeProperties_url')]",
 					"enableServerCertificateValidation": true,
-					"authenticationType": "Anonymous",
-					"authHeaders": {
-						"X-API-Key": {
-							"type": "SecureString",
-							"value": "**********"
-						},
-						"Authorization": {
-							"type": "SecureString",
-							"value": "**********"
-						}
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/IR-SSIS')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "Managed",
-				"description": "SSIS",
-				"typeProperties": {
-					"computeProperties": {
-						"location": "East US 2",
-						"nodeSize": "Standard_D4_v3",
-						"numberOfNodes": 2,
-						"maxParallelExecutionsPerNode": 4
-					},
-					"ssisProperties": {
-						"catalogInfo": {
-							"catalogServerEndpoint": "[parameters('IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]",
-							"catalogAdminUserName": "[parameters('IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]",
-							"catalogAdminPassword": {
-								"type": "SecureString",
-								"value": "[parameters('IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
-							},
-							"catalogPricingTier": "S1"
-						},
-						"edition": "Standard",
-						"licenseType": "LicenseIncluded"
-					}
+					"authenticationType": "Anonymous"
 				}
 			},
 			"dependsOn": []
@@ -258,7 +170,6 @@
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"type": "SelfHosted",
-				"description": "Shared my local sql server self hosted",
 				"typeProperties": {
 					"linkedInfo": {
 						"resourceId": "[parameters('SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId')]",
@@ -794,57 +705,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AmazonS31')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/HDI_ADFLab')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "HDInsightOnDemand",
-				"typeProperties": {
-					"clusterType": "hadoop",
-					"clusterSize": 4,
-					"timeToLive": "00:15:00",
-					"version": "4.0",
-					"hostSubscriptionId": "[parameters('HDI_ADFLab_properties_typeProperties_hostSubscriptionId')]",
-					"clusterResourceGroup": "[parameters('HDI_ADFLab_properties_typeProperties_clusterResourceGroup')]",
-					"servicePrincipalId": "[parameters('HDI_ADFLab_properties_typeProperties_servicePrincipalId')]",
-					"osType": "Linux",
-					"tenant": "[parameters('HDI_ADFLab_properties_typeProperties_tenant')]",
-					"clusterNamePrefix": "",
-					"clusterUserName": "[parameters('HDI_ADFLab_properties_typeProperties_clusterUserName')]",
-					"clusterPassword": {
-						"type": "SecureString",
-						"value": "[parameters('HDI_ADFLab_clusterPassword')]"
-					},
-					"clusterSshUserName": "[parameters('HDI_ADFLab_properties_typeProperties_clusterSshUserName')]",
-					"clusterSshPassword": {
-						"type": "SecureString",
-						"value": "[parameters('HDI_ADFLab_clusterSshPassword')]"
-					},
-					"servicePrincipalKey": {
-						"type": "SecureString",
-						"value": "[parameters('HDI_ADFLab_servicePrincipalKey')]"
-					},
-					"additionalLinkedServiceNames": [
-						{
-							"referenceName": "AzureBlobStorage1",
-							"type": "LinkedServiceReference"
-						}
-					],
-					"linkedServiceName": {
-						"referenceName": "AzureBlobStorage1",
-						"type": "LinkedServiceReference"
-					},
-					"headNodeSize": "",
-					"dataNodeSize": "",
-					"zookeeperNodeSize": ""
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
 			]
 		},
 		{
@@ -1698,6 +1558,99 @@
 				"[concat(variables('factoryId'), '/datasets/AzureSQLDataWarehouse')]",
 				"[concat(variables('factoryId'), '/datasets/BlobWeather')]",
 				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Weather to Blob Copy')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Weather to Blob Copy",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "HttpJson",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "BlobWeather",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "L200 Hand-on lab"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/HttpJson')]",
+				"[concat(variables('factoryId'), '/datasets/BlobWeather')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LocalAdventureWork')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LocalSQLServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "AdventureWorksDW2019"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LocalSQLServer')]"
 			]
 		}
 	]

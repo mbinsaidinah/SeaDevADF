@@ -27,18 +27,6 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureSQLServer'"
 		},
-		"HDI_ADFLab_clusterPassword": {
-			"type": "secureString",
-			"metadata": "Secure string for 'clusterPassword' of 'HDI_ADFLab'"
-		},
-		"HDI_ADFLab_clusterSshPassword": {
-			"type": "secureString",
-			"metadata": "Secure string for 'clusterSshPassword' of 'HDI_ADFLab'"
-		},
-		"HDI_ADFLab_servicePrincipalKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'servicePrincipalKey' of 'HDI_ADFLab'"
-		},
 		"LocalSQLServer_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'LocalSQLServer'"
@@ -47,48 +35,9 @@
 			"type": "string",
 			"defaultValue": "AKIAVIMR7B66JW7MWC5M"
 		},
-		"HDI_ADFLab_properties_typeProperties_hostSubscriptionId": {
-			"type": "string",
-			"defaultValue": "887c8aa5-917a-430d-9235-90d8e4950357"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterResourceGroup": {
-			"type": "string",
-			"defaultValue": "SeaDev2"
-		},
-		"HDI_ADFLab_properties_typeProperties_servicePrincipalId": {
-			"type": "string",
-			"defaultValue": "1583fab3-71d3-45e2-ad9d-00aa8c5a4d1e"
-		},
-		"HDI_ADFLab_properties_typeProperties_tenant": {
-			"type": "string",
-			"defaultValue": "72f988bf-86f1-41af-91ab-2d7cd011db47"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterUserName": {
-			"type": "string",
-			"defaultValue": "labadmin"
-		},
-		"HDI_ADFLab_properties_typeProperties_clusterSshUserName": {
-			"type": "string",
-			"defaultValue": "sshuser"
-		},
 		"HttpServer1_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://weather-b362.restdb.io/rest/random-weather-dec-2016"
-		},
-		"Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient": {
-			"type": "string",
-			"defaultValue": "mbinsaidinah@microsoft.com"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-			"type": "string",
-			"defaultValue": "adflabsqlgg2qq.database.windows.net"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
-			"type": "string",
-			"defaultValue": "labadmin"
-		},
-		"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
-			"type": "secureString"
 		},
 		"SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId": {
 			"type": "string",
@@ -136,15 +85,6 @@
 					"AzureSQLServer_connectionString": {
 						"value": "[parameters('AzureSQLServer_connectionString')]"
 					},
-					"HDI_ADFLab_clusterPassword": {
-						"value": "[parameters('HDI_ADFLab_clusterPassword')]"
-					},
-					"HDI_ADFLab_clusterSshPassword": {
-						"value": "[parameters('HDI_ADFLab_clusterSshPassword')]"
-					},
-					"HDI_ADFLab_servicePrincipalKey": {
-						"value": "[parameters('HDI_ADFLab_servicePrincipalKey')]"
-					},
 					"LocalSQLServer_connectionString": {
 						"value": "[parameters('LocalSQLServer_connectionString')]"
 					},
@@ -154,35 +94,8 @@
 					"HttpServer1_properties_typeProperties_url": {
 						"value": "[parameters('HttpServer1_properties_typeProperties_url')]"
 					},
-					"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
-						"value": "[parameters('IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]"
-					},
-					"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
-						"value": "[parameters('IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]"
-					},
-					"IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
-						"value": "[parameters('IR-SSIS_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
-					},
 					"SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId": {
 						"value": "[parameters('SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId')]"
-					},
-					"HDI_ADFLab_properties_typeProperties_hostSubscriptionId": {
-						"value": "[parameters('HDI_ADFLab_properties_typeProperties_hostSubscriptionId')]"
-					},
-					"HDI_ADFLab_properties_typeProperties_clusterResourceGroup": {
-						"value": "[parameters('HDI_ADFLab_properties_typeProperties_clusterResourceGroup')]"
-					},
-					"HDI_ADFLab_properties_typeProperties_servicePrincipalId": {
-						"value": "[parameters('HDI_ADFLab_properties_typeProperties_servicePrincipalId')]"
-					},
-					"HDI_ADFLab_properties_typeProperties_tenant": {
-						"value": "[parameters('HDI_ADFLab_properties_typeProperties_tenant')]"
-					},
-					"HDI_ADFLab_properties_typeProperties_clusterUserName": {
-						"value": "[parameters('HDI_ADFLab_properties_typeProperties_clusterUserName')]"
-					},
-					"HDI_ADFLab_properties_typeProperties_clusterSshUserName": {
-						"value": "[parameters('HDI_ADFLab_properties_typeProperties_clusterSshUserName')]"
 					}
 				}
 			},
@@ -201,9 +114,6 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
-					},
-					"Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient": {
-						"value": "[parameters('Daily-DW Load Trigger_properties_Master_Begin DW Load_parameters_recipient')]"
 					}
 				}
 			},
