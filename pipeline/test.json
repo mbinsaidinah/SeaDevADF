@@ -12,17 +12,31 @@
 						"value": "@variables('data')",
 						"type": "Expression"
 					},
+					"isSequential": true,
 					"activities": [
 						{
-							"name": "Set variable1",
-							"type": "SetVariable",
+							"name": "Stored procedure1",
+							"type": "SqlServerStoredProcedure",
 							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
-								"variableName": "data",
-								"value": {
-									"value": "@item()",
+								"storedProcedureName": {
+									"value": "@concat('DBO.Flight', item())",
 									"type": "Expression"
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureSQLServer",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"DBName": "AirlinePerformance-OLTP"
 								}
 							}
 						},
@@ -31,7 +45,7 @@
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "Set variable1",
+									"activity": "Stored procedure1",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -54,6 +68,42 @@
 								"dataset": {
 									"referenceName": "AzureSQL",
 									"type": "DatasetReference"
+								},
+								"firstRowOnly": true
+							}
+						},
+						{
+							"name": "Lookup2",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Stored procedure1",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "ODS",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema": "DBO",
+										"table": "Airport"
+									}
 								}
 							}
 						}
@@ -65,9 +115,9 @@
 			"data": {
 				"type": "Array",
 				"defaultValue": [
-					"cat",
-					"dog",
-					"cow"
+					1,
+					22,
+					3
 				]
 			}
 		},
