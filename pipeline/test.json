@@ -77,9 +77,9 @@
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "Stored procedure1",
+									"activity": "Fail1",
 									"dependencyConditions": [
-										"Failed"
+										"Succeeded"
 									]
 								}
 							],
@@ -105,6 +105,23 @@
 										"table": "Airport"
 									}
 								}
+							}
+						},
+						{
+							"name": "Fail1",
+							"type": "Fail",
+							"dependsOn": [
+								{
+									"activity": "Stored procedure1",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "Error",
+								"errorCode": "Error"
 							}
 						}
 					]
