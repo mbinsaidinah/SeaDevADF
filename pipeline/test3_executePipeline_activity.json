@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"storedProcedureName": {
-						"value": "@concat('DBO.Flight', variables('data'))",
+						"value": "@concat('DBO.Flight', variables('data2'))",
 						"type": "Expression"
 					}
 				},
@@ -104,6 +104,12 @@
 					22,
 					3
 				]
+			},
+			"x2": {
+				"type": "String"
+			},
+			"data2": {
+				"type": "String"
 			}
 		},
 		"folder": {
