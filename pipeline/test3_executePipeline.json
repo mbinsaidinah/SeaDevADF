@@ -1,0 +1,49 @@
+{
+	"name": "test3_executePipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('data')",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "test3_executePipeline_activity",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"data": {
+				"type": "Array",
+				"defaultValue": [
+					1,
+					22,
+					3
+				]
+			}
+		},
+		"folder": {
+			"name": "2209060030000602-MDI Framework/IS-U/2_Stage/Inner"
+		},
+		"annotations": []
+	}
+}

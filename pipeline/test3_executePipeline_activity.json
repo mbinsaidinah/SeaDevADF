@@ -1,0 +1,114 @@
+{
+	"name": "test3_executePipeline_activity",
+	"properties": {
+		"activities": [
+			{
+				"name": "Stored procedure1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "@concat('DBO.Flight', variables('data'))",
+						"type": "Expression"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSQLServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "AirlinePerformance-OLTP"
+					}
+				}
+			},
+			{
+				"name": "Lookup Success",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Stored procedure1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSQL",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "Lookup Fail",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Stored procedure1",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ODS",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema": "DBO",
+							"table": "Airport"
+						}
+					}
+				}
+			}
+		],
+		"variables": {
+			"data": {
+				"type": "Array",
+				"defaultValue": [
+					1,
+					22,
+					3
+				]
+			}
+		},
+		"folder": {
+			"name": "2209060030000602-MDI Framework/IS-U/2_Stage/Inner"
+		},
+		"annotations": []
+	}
+}
