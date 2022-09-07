@@ -77,9 +77,9 @@
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "Fail1",
+									"activity": "Stored procedure1",
 									"dependencyConditions": [
-										"Succeeded"
+										"Failed"
 									]
 								}
 							],
@@ -108,20 +108,34 @@
 							}
 						},
 						{
-							"name": "Fail1",
-							"type": "Fail",
+							"name": "Lookup3",
+							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "Stored procedure1",
+									"activity": "Lookup1",
 									"dependencyConditions": [
-										"Failed"
+										"Skipped"
 									]
 								}
 							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
-								"message": "Error",
-								"errorCode": "Error"
+								"source": {
+									"type": "SqlServerSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "AzureSQL",
+									"type": "DatasetReference"
+								}
 							}
 						}
 					]
