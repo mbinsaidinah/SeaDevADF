@@ -41,7 +41,7 @@
 							}
 						},
 						{
-							"name": "Lookup1",
+							"name": "Lookup Success",
 							"type": "Lookup",
 							"dependsOn": [
 								{
@@ -73,7 +73,7 @@
 							}
 						},
 						{
-							"name": "Lookup2",
+							"name": "Lookup Error ",
 							"type": "Lookup",
 							"dependsOn": [
 								{
@@ -108,11 +108,11 @@
 							}
 						},
 						{
-							"name": "Lookup3",
+							"name": "Lookup Skip",
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "Lookup1",
+									"activity": "Lookup Success",
 									"dependencyConditions": [
 										"Skipped"
 									]
