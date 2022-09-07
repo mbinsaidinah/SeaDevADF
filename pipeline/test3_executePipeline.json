@@ -9,7 +9,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@variables('data')",
+						"value": "@variables('data1')",
 						"type": "Expression"
 					},
 					"isSequential": true,
@@ -17,7 +17,14 @@
 						{
 							"name": "Execute Pipeline1",
 							"type": "ExecutePipeline",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "Set variable1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"userProperties": [],
 							"typeProperties": {
 								"pipeline": {
@@ -26,19 +33,35 @@
 								},
 								"waitOnCompletion": true
 							}
+						},
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "data2",
+								"value": {
+									"value": "@item()",
+									"type": "Expression"
+								}
+							}
 						}
 					]
 				}
 			}
 		],
 		"variables": {
-			"data": {
+			"data1": {
 				"type": "Array",
 				"defaultValue": [
 					1,
 					22,
 					3
 				]
+			},
+			"data2": {
+				"type": "String"
 			}
 		},
 		"folder": {
