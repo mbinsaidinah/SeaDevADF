@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"storedProcedureName": {
-						"value": "@concat('DBO.Flight', variables('data2'))",
+						"value": "@concat('DBO.Flight',pipeline().parameters.Id)",
 						"type": "Expression"
 					}
 				},
@@ -94,21 +94,32 @@
 						}
 					}
 				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Lookup Success",
+						"dependencyConditions": [
+							"Skipped"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "dummy",
+					"value": "hi"
+				}
 			}
 		],
+		"parameters": {
+			"Id": {
+				"type": "string"
+			}
+		},
 		"variables": {
-			"data": {
-				"type": "Array",
-				"defaultValue": [
-					1,
-					22,
-					3
-				]
-			},
-			"x2": {
-				"type": "String"
-			},
-			"data2": {
+			"dummy": {
 				"type": "String"
 			}
 		},
