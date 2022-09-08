@@ -108,7 +108,7 @@
 							}
 						},
 						{
-							"name": "Set variable1",
+							"name": "Set variable as Error Handling",
 							"type": "SetVariable",
 							"dependsOn": [
 								{
