@@ -3056,21 +3056,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/SharedMsSQLLocalIR')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "SelfHosted",
-				"typeProperties": {
-					"linkedInfo": {
-						"resourceId": "[parameters('SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId')]",
-						"authorizationType": "Rbac"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/test_trigger')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -3090,7 +3075,7 @@
 				"typeProperties": {
 					"recurrence": {
 						"frequency": "Minute",
-						"interval": 15,
+						"interval": 3,
 						"startTime": "2022-09-19T01:11:00Z",
 						"endTime": "2022-09-20T00:11:00Z",
 						"timeZone": "UTC"
@@ -3100,6 +3085,21 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/test2_Error handling')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SharedMsSQLLocalIR')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {
+					"linkedInfo": {
+						"resourceId": "[parameters('SharedMsSQLLocalIR_properties_typeProperties_linkedInfo_resourceId')]",
+						"authorizationType": "Rbac"
+					}
+				}
+			},
+			"dependsOn": []
 		}
 	]
 }
