@@ -1,0 +1,25 @@
+{
+	"name": "test_trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "test2_Error handling",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 15,
+				"startTime": "2022-09-19T01:11:00Z",
+				"endTime": "2022-09-19T00:11:00Z",
+				"timeZone": "UTC"
+			}
+		}
+	}
+}
