@@ -1292,6 +1292,37 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/test3_executePipeline_activity')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/test_trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "test2_Error handling",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2022-09-19T01:11:00Z",
+						"endTime": "2022-09-20T00:11:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/test2_Error handling')]"
+			]
 		}
 	]
 }
