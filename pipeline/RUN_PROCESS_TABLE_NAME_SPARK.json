@@ -1477,7 +1477,7 @@
 			}
 		},
 		"folder": {
-			"name": "ALL_GENERIC"
+			"name": "2209140050001514"
 		},
 		"annotations": [
 			"@pipeline().parameters.TABLE_NAME"
