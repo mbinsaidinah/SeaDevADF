@@ -1,0 +1,202 @@
+{
+	"name": "DELETE_DAT_FS",
+	"properties": {
+		"activities": [
+			{
+				"name": "LookupCTL_METADATA",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "WaitAsPerTable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.20:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "select * from dbo.ctlmetadata where table_name like '@{pipeline().parameters.TABLE_NAME}' and frequency like '@{pipeline().parameters.JOB_TYPE}'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_ASQL_CLD_EDW",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEachDeleteDATFS",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LookupCTL_METADATA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LookupCTL_METADATA').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "DeleteFSDAT",
+							"type": "Delete",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 90,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "DS_ADLS_CLD_EDW_FS",
+									"type": "DatasetReference"
+								},
+								"enableLogging": false,
+								"storeSettings": {
+									"type": "AzureFileStorageReadSettings",
+									"recursive": true,
+									"wildcardFileName": {
+										"value": "@{item().DAT_FILE_NAME}",
+										"type": "Expression"
+									},
+									"enablePartitionDiscovery": false
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "WaitAsPerTable",
+				"type": "Switch",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "@pipeline().parameters.TABLE_NAME",
+						"type": "Expression"
+					},
+					"cases": [
+						{
+							"value": "DWCAST_OWNER.ACC_AST_PST_SPLT_FACT_CURR",
+							"activities": [
+								{
+									"name": "Wait15_copy1",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 900
+									}
+								}
+							]
+						},
+						{
+							"value": "DWCSADM.ACCT_PNL_LOT_REAL_FACT",
+							"activities": [
+								{
+									"name": "Wait15_copy2",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 900
+									}
+								}
+							]
+						},
+						{
+							"value": "DWCASTHIST_OWNER.ACC_AST_PRE_SPLIT_HIST",
+							"activities": [
+								{
+									"name": "Wait15_copy3",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 900
+									}
+								}
+							]
+						},
+						{
+							"value": "DWCSADM.ACCT_PNL_LOT_UREAL_FACT",
+							"activities": [
+								{
+									"name": "Wait15_copy4",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 900
+									}
+								}
+							]
+						},
+						{
+							"value": "DWCAST_OWNER.ACC_AST_PRE_SPLT_FACT_CURR",
+							"activities": [
+								{
+									"name": "Wait15_copy5",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 900
+									}
+								}
+							]
+						}
+					],
+					"defaultActivities": [
+						{
+							"name": "Wait2",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 120
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"TABLE_NAME": {
+				"type": "string"
+			},
+			"JOB_TYPE": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "2209140050001514"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-09-06T15:25:04Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

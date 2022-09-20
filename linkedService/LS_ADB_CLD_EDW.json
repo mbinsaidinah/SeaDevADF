@@ -1,0 +1,32 @@
+{
+	"name": "LS_ADB_CLD_EDW",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"parameters": {
+			"ADBworkspaceURL": {
+				"type": "string",
+				"defaultValue": "https://adb-3574641351037345.5.azuredatabricks.net"
+			},
+			"ADBresourceID": {
+				"type": "string",
+				"defaultValue": "/subscriptions/e0ceed26-49d7-4615-bb49-729b18fad859/resourceGroups/RG-EUS2-DEV-ADW-001/providers/Microsoft.Databricks/workspaces/dbreus2devadw002"
+			},
+			"ADBclusterID": {
+				"type": "string",
+				"defaultValue": "0120-161526-hfx1c9xx"
+			}
+		},
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "@linkedService().ADBworkspaceURL",
+			"authentication": "MSI",
+			"workspaceResourceId": "@linkedService().ADBresourceID",
+			"existingClusterId": "@linkedService().ADBclusterID"
+		},
+		"connectVia": {
+			"referenceName": "IR-SELFHOSTED-EDW",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

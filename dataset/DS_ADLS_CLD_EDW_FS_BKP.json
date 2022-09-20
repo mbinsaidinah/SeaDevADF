@@ -1,0 +1,23 @@
+{
+	"name": "DS_ADLS_CLD_EDW_FS_BKP",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_CLD_EDW_FS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureFileStorageLocation",
+				"folderPath": "backup"
+			},
+			"columnDelimiter": "^~|",
+			"escapeChar": "",
+			"firstRowAsHeader": false,
+			"quoteChar": ""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,25 @@
+{
+	"name": "LS_ASQL_CLD_EDW",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=at41679-sqldbeus2testadwa1-test.database.windows.net;Initial Catalog=at41679-adwsqldb-test",
+			"servicePrincipalId": "bd8072ce-3d3b-4ed4-be39-460da3c26117",
+			"servicePrincipalKey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_AKV_CLD_EDW",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "runtime-spn-scrt"
+			},
+			"tenant": "fb6ea403-7cf1-4905-810a-fe5547e98204"
+		},
+		"connectVia": {
+			"referenceName": "IR-SELFHOSTED-EDW",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

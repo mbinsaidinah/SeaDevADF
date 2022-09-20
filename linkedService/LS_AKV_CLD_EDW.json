@@ -1,0 +1,12 @@
+{
+	"name": "LS_AKV_CLD_EDW",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "linked service to connect to Azure Key vault",
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://akveus2testadw002.vault.azure.net/"
+		}
+	}
+}

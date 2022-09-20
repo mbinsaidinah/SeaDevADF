@@ -1,0 +1,6 @@
+{
+	"name": "IR-SELFHOSTED-EDW",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}

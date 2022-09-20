@@ -1,0 +1,17 @@
+{
+	"name": "DS_ASQL_CLD_EDW",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ASQL_CLD_EDW",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "ctlmetadata"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
