@@ -1,17 +1,1488 @@
 {
-	"name": "pipeline2",
+	"name": "RUN_PROCESS_TABLE_NAME_SPARK",
 	"properties": {
 		"activities": [
 			{
-				"name": "Wait1",
-				"type": "Wait",
+				"name": "LookupCTL_METADATA",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "IF_MONTHLY",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.20:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "select * from dbo.ctlmetadata where table_name like '@{variables('TABLE_NAME')}' and frequency like '@{variables('JOB_TYPE')}'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEachDATofTABLE",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "TRUNCATE",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LookupCTL_METADATA').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"batchCount": 10,
+					"activities": [
+						{
+							"name": "CopyData_FS_TO_CONTAINER",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "LookupTIME_DIMN",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 90,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureFileStorageReadSettings",
+										"recursive": true,
+										"wildcardFileName": {
+											"value": "@item().DAT_FILE_NAME",
+											"type": "Expression"
+										},
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false
+							}
+						},
+						{
+							"name": "CopyData_CONTAINER_TO_ARCHIVE",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "CopyData_FS_TO_CONTAINER",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 90,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureFileStorageReadSettings",
+										"recursive": true,
+										"wildcardFileName": {
+											"value": "@item().DAT_FILE_NAME",
+											"type": "Expression"
+										},
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"enableSkipIncompatibleRow": false
+							}
+						},
+						{
+							"name": "LookupTIME_DIMN",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "SELECT concat('@{split(item().DAT_FILE_NAME, '.')[0]}','_',FORMAT(DATE_D, 'yyyy-MM-dd'),'_',FORMAT(SYSDATETIME(), 'yyyy-MM-dd_HH:mm:ss'),'.','@{split(item().DAT_FILE_NAME, '.')[1]}') BKP_NAME\nFROM DWCSADM.TIME_DIMN\nWHERE TME_DIMN_I = 'TDTD'",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"firstRowOnly": false
+							}
+						},
+						{
+							"name": "CopyData_FS_TO_FSBKP",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "CopyData_CONTAINER_TO_ARCHIVE",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 90,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureFileStorageReadSettings",
+										"recursive": true,
+										"wildcardFileName": {
+											"value": "@item().DAT_FILE_NAME",
+											"type": "Expression"
+										},
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureFileStorageWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false
+							}
+						},
+						{
+							"name": "countDATRows",
+							"type": "AppendVariable",
+							"dependsOn": [
+								{
+									"activity": "CopyData_FS_TO_CONTAINER",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "DAT_ROW_COUNT_ARRAY",
+								"value": {
+									"value": "@activity('CopyData_FS_TO_CONTAINER').output.rowsRead",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "TRUNCATE",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "LookupCTL_METADATA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('LookupCTL_METADATA').output.value[0].MODE_OF_OPERATION, 'TRUNCATE')",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "TRUNCATE TABLE_STG_APPEND",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "SELECT TOP(1)* FROM @{concat('LEGACY_', split(variables('TABLE_NAME'), '.')[0],'.',split(variables('TABLE_NAME'), '.')[1])} WHERE 1=0",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "SqlDWSink",
+									"preCopyScript": {
+										"value": "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '@{split(variables('TABLE_NAME'), '.')[1]}' AND TABLE_SCHEMA='@{concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])}' AND TABLE_TYPE LIKE 'BASE TABLE')\nBEGIN\n    DROP TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])}\n    SELECT * INTO @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} FROM @{concat(concat('LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[1])} WHERE 1 = 0;\n    IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '@{split(variables('TABLE_NAME'), '.')[1]}' AND TABLE_SCHEMA='@{concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])}' AND COLUMN_NAME='CURR_VER_C')\n    BEGIN\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ALTER COLUMN CURR_VER_C VARCHAR(1) NULL\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ADD  DEFAULT ('Y') FOR [CURR_VER_C]\n    END\n\tIF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '@{split(variables('TABLE_NAME'), '.')[1]}' AND TABLE_SCHEMA='@{concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])}' AND COLUMN_NAME='REC_PRCS_C')\n    BEGIN\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ALTER COLUMN REC_PRCS_C VARCHAR(1) NULL\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ADD  DEFAULT ('N') FOR [REC_PRCS_C]\n    END\nEND\nELSE\nBEGIN \n    SELECT * INTO @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} FROM @{concat(concat('LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[1])} WHERE 1 = 0;\n    IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '@{split(variables('TABLE_NAME'), '.')[1]}' AND TABLE_SCHEMA='@{concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])}' AND COLUMN_NAME='CURR_VER_C')\n    BEGIN\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ALTER COLUMN CURR_VER_C VARCHAR(1) NULL\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ADD  DEFAULT ('Y') FOR [CURR_VER_C]\n    END\n\tIF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '@{split(variables('TABLE_NAME'), '.')[1]}' AND TABLE_SCHEMA='@{concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])}' AND COLUMN_NAME='REC_PRCS_C')\n    BEGIN\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ALTER COLUMN REC_PRCS_C VARCHAR(1) NULL\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ADD  DEFAULT ('N') FOR [REC_PRCS_C]\n    END\nEND",
+										"type": "Expression"
+									},
+									"allowPolyBase": true,
+									"polyBaseSettings": {
+										"rejectValue": 0,
+										"rejectType": "value",
+										"useTypeDefault": false
+									},
+									"disableMetricsCollection": false
+								},
+								"enableStaging": true
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "TRUNCATE TABLE",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "DELETE RECORDS MV",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "SELECT TOP(1)* FROM @{concat('LEGACY_',split(variables('TABLE_NAME'), '.')[0],'.',split(variables('TABLE_NAME'), '.')[1])} WHERE 1=0",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "SqlDWSink",
+									"preCopyScript": {
+										"value": "TRUNCATE TABLE @{concat('LEGACY_',split(variables('TABLE_NAME'), '.')[0],'.',split(variables('TABLE_NAME'), '.')[1])}",
+										"type": "Expression"
+									},
+									"allowPolyBase": true,
+									"polyBaseSettings": {
+										"rejectValue": 0,
+										"rejectType": "value",
+										"useTypeDefault": false
+									},
+									"disableMetricsCollection": false
+								},
+								"enableStaging": true
+							}
+						},
+						{
+							"name": "TRUNCATE TABLE_STG",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "TRUNCATE TABLE",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "SELECT TOP(1)* FROM @{concat('LEGACY_', split(variables('TABLE_NAME'), '.')[0],'.',split(variables('TABLE_NAME'), '.')[1])} WHERE 1=0",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "SqlDWSink",
+									"preCopyScript": {
+										"value": "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '@{split(variables('TABLE_NAME'), '.')[1]}' AND TABLE_SCHEMA='@{concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])}' AND TABLE_TYPE LIKE 'BASE TABLE')\nBEGIN\n    DROP TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])}\n    SELECT * INTO @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} FROM @{concat(concat('LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[1])} WHERE 1 = 0;\n    IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '@{split(variables('TABLE_NAME'), '.')[1]}' AND TABLE_SCHEMA='@{concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])}' AND COLUMN_NAME='CURR_VER_C')\n    BEGIN\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ALTER COLUMN CURR_VER_C VARCHAR(1) NULL\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ADD  DEFAULT ('Y') FOR [CURR_VER_C]\n    END\n\tIF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '@{split(variables('TABLE_NAME'), '.')[1]}' AND TABLE_SCHEMA='@{concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])}' AND COLUMN_NAME='REC_PRCS_C')\n    BEGIN\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ALTER COLUMN REC_PRCS_C VARCHAR(1) NULL\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ADD  DEFAULT ('N') FOR [REC_PRCS_C]\n    END\nEND\nELSE\nBEGIN \n    SELECT * INTO @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} FROM @{concat(concat('LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[1])} WHERE 1 = 0;\n    IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '@{split(variables('TABLE_NAME'), '.')[1]}' AND TABLE_SCHEMA='@{concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])}' AND COLUMN_NAME='CURR_VER_C')\n    BEGIN\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ALTER COLUMN CURR_VER_C VARCHAR(1) NULL\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ADD  DEFAULT ('Y') FOR [CURR_VER_C]\n    END\n\tIF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '@{split(variables('TABLE_NAME'), '.')[1]}' AND TABLE_SCHEMA='@{concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])}' AND COLUMN_NAME='REC_PRCS_C')\n    BEGIN\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ALTER COLUMN REC_PRCS_C VARCHAR(1) NULL\n        ALTER TABLE @{concat(concat('STG_LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0]),'.',split(variables('TABLE_NAME'), '.')[1])} ADD  DEFAULT ('N') FOR [REC_PRCS_C]\n    END\nEND",
+										"type": "Expression"
+									},
+									"allowPolyBase": true,
+									"polyBaseSettings": {
+										"rejectValue": 0,
+										"rejectType": "value",
+										"useTypeDefault": false
+									},
+									"disableMetricsCollection": false
+								},
+								"enableStaging": true
+							}
+						},
+						{
+							"name": "DELETE RECORDS MV",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[LEGACY_DWCSADM].[LOAD_DELETE_RECORDS_CURR_MV]",
+								"storedProcedureParameters": {
+									"job_type": {
+										"value": {
+											"value": "@variables('JOB_TYPE')",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"schemaname": {
+										"value": {
+											"value": "@concat('LEGACY_',split(variables('TABLE_NAME'), '.')[0])",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"tablename": {
+										"value": {
+											"value": "@split(variables('TABLE_NAME'), '.')[1]",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "IF_MONTHLY",
+				"type": "IfCondition",
 				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
-					"waitTimeInSeconds": 1
+					"expression": {
+						"value": "@endswith(pipeline().parameters.TABLE_NAME, '_M')",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "SET_JOB_TYPE_D",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "JOB_TYPE",
+								"value": "DAILY"
+							}
+						},
+						{
+							"name": "SET_TABLE_NAME_D",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "SET_JOB_TYPE_D",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "TABLE_NAME",
+								"value": {
+									"value": "@pipeline().parameters.TABLE_NAME",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "SET_JOB_TYPE_M",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "JOB_TYPE",
+								"value": "MONTHLY"
+							}
+						},
+						{
+							"name": "SET_TABLE_NAME_M",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "SET_JOB_TYPE_M",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "TABLE_NAME",
+								"value": {
+									"value": "@substring(pipeline().parameters.TABLE_NAME, 0, indexof(pipeline().parameters.TABLE_NAME, '_M'))",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "IS_TABLE_DATA_BY_DATE_DRIVER",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Delete All DAT",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('LookupCTL_METADATA').output.value[0].IS_TABLE_DATA_BY_DATE_DRIVER, 'Y')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "DELETE_TABLE_DATA_BY_DATE",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 90,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[LEGACY_DWCSADM].[DELETE_TABLE_DATA_BY_DATE]",
+								"storedProcedureParameters": {
+									"deletecode": {
+										"value": {
+											"value": "@activity('LookupCTL_METADATA').output.value[0].DELETE_CODE",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"deletecolumnname": {
+										"value": {
+											"value": "@activity('LookupCTL_METADATA').output.value[0].DELETE_COLUMN_NAME",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"filetablename": {
+										"value": {
+											"value": "@split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[1]",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"schemaname": {
+										"value": {
+											"value": "@concat('LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"tablename": {
+										"value": {
+											"value": "@split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[1]",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "IS_DELETE_TABLE_DATA_HISTORY",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "CopySTGtoCore",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('LookupCTL_METADATA').output.value[0].IS_DELETE_TABLE_DATA_HISTORY, 'Y')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "DELETE_TABLE_DATA_HISTORY",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 90,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[LEGACY_DWCSADM].[DELETE_TABLE_DATA_HISTORY]",
+								"storedProcedureParameters": {
+									"deletecolumnname": {
+										"value": {
+											"value": "@activity('LookupCTL_METADATA').output.value[0].DELETE_COLUMN_NAME",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"deletenummonthnumber": {
+										"value": {
+											"value": "@activity('LookupCTL_METADATA').output.value[0].DELETE_MONTH_NO",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"filetablename": {
+										"value": {
+											"value": "@split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[1]",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"schemaname": {
+										"value": {
+											"value": "@concat('LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"tablename": {
+										"value": {
+											"value": "@split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[1]",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "IS_DIMN",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "IS_DELETE_TABLE_DATA_HISTORY",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('LookupCTL_METADATA').output.value[0].IS_DIMN, 'Y')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "DIMN_PROCESS",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "LookupCTL_METADATA_DIMN",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 90,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[LEGACY_DWCSADM].[DIMN_PROCESS]",
+								"storedProcedureParameters": {
+									"effdate": {
+										"value": {
+											"value": "@activity('LookupCTL_METADATA_DIMN').output.value[0].TO_DATE_COLUMN",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"keycolumnname": {
+										"value": {
+											"value": "@activity('LookupCTL_METADATA_DIMN').output.value[0].KEY_COLUMN",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"recprcs": {
+										"value": {
+											"value": "@activity('LookupCTL_METADATA_DIMN').output.value[0].PRCS_COLUMN",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"schemaname": {
+										"value": {
+											"value": "@split(activity('LookupCTL_METADATA_DIMN').output.value[0].TABLE_NAME, '.')[0]",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"tablename": {
+										"value": {
+											"value": "@split(activity('LookupCTL_METADATA_DIMN').output.value[0].TABLE_NAME, '.')[1]",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"version": {
+										"value": {
+											"value": "@activity('LookupCTL_METADATA_DIMN').output.value[0].VERSION",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							}
+						},
+						{
+							"name": "LookupCTL_METADATA_DIMN",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.20:00:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 90,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "select * from dbo.ctlmetadata_dimn where table_name like '@{variables('TABLE_NAME')}'",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"firstRowOnly": false
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "CopySTGtoCore",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "DELETE_REV_GEAR_DAILY_REC_IF_ANY",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.20:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"allowPolyBase": true,
+						"polyBaseSettings": {
+							"rejectValue": {
+								"value": "@variables('DAT_ROW_COUNT')",
+								"type": "Expression"
+							},
+							"rejectType": "value",
+							"useTypeDefault": false
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": true,
+					"enableSkipIncompatibleRow": true
+				}
+			},
+			{
+				"name": "CURRENT_TABLES_PROC",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "IS_DIMN",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.20:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 90,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[LEGACY_DWCSADM].[LOAD_CURR_TBLS]",
+					"storedProcedureParameters": {
+						"schemaname": {
+							"value": {
+								"value": "@concat('LEGACY_', split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[0])",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"tablename": {
+							"value": {
+								"value": "@split(activity('LookupCTL_METADATA').output.value[0].TABLE_NAME, '.')[1]",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				}
+			},
+			{
+				"name": "DELETE_REV_GEAR_DAILY_REC_IF_ANY",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "IS_TABLE_DATA_BY_DATE_DRIVER",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.20:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 90,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[LEGACY_DWCSADM].[LOAD_DELETE_REVGEAR_REC]",
+					"storedProcedureParameters": {
+						"job_type": {
+							"value": {
+								"value": "@variables('JOB_TYPE')",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"schemaname": {
+							"value": {
+								"value": "@concat('LEGACY_',split(variables('TABLE_NAME'), '.')[0])",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"tablename": {
+							"value": {
+								"value": "@split(variables('TABLE_NAME'), '.')[1]",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				}
+			},
+			{
+				"name": "DAT_TO_DLF_SPARK",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "ForEachDATofTABLE",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.20:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/ADW/DAT_2_DLF",
+					"baseParameters": {
+						"ctl_file_name": {
+							"value": "@activity('LookupCTL_METADATA').output.value[0].CTL_FILE_NAME",
+							"type": "Expression"
+						},
+						"table_name": {
+							"value": "@activity('LookupCTL_METADATA').output.value[0].TABLE_NAME",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "ForEachDLMofTABLE",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "DAT_TO_DLF_SPARK",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LookupCTL_METADATA').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"batchCount": 10,
+					"activities": [
+						{
+							"name": "LookupCSV",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": false,
+										"wildcardFolderPath": {
+											"value": "@concat('data/', variables('TABLE_NAME'), '/csvfiles/sourcefile=', item().DAT_FILE_NAME)",
+											"type": "Expression"
+										},
+										"wildcardFileName": "*.csv",
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"firstRowOnly": true
+							}
+						},
+						{
+							"name": "If CSV Exist",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "LookupCSV",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@contains(activity('LookupCSV').output, 'firstRow')",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "CopyDLMtoSTG",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.20:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "DelimitedTextSource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"wildcardFolderPath": {
+														"value": "@concat('data/',variables('TABLE_NAME'),'/csvfiles/sourcefile=',item().DAT_FILE_NAME)",
+														"type": "Expression"
+													},
+													"wildcardFileName": "*.csv",
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "DelimitedTextReadSettings"
+												}
+											},
+											"sink": {
+												"type": "SqlDWSink",
+												"allowPolyBase": true,
+												"polyBaseSettings": {
+													"rejectValue": {
+														"value": "@int(variables('DAT_ROW_COUNT'))",
+														"type": "Expression"
+													},
+													"rejectType": "value",
+													"useTypeDefault": false
+												},
+												"tableOption": "autoCreate",
+												"disableMetricsCollection": false
+											},
+											"enableStaging": true,
+											"enableSkipIncompatibleRow": true
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "UPDATE_S",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CURRENT_TABLES_PROC",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 90,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[ADLS_STGValidation_Spark_SP]",
+					"storedProcedureParameters": {
+						"REJECT_COUNT": {
+							"value": {
+								"value": "@sub(int(variables('DAT_ROW_COUNT')), activity('CopySTGtoCore').output.rowsCopied)",
+								"type": "Expression"
+							},
+							"type": "Int64"
+						},
+						"REJECT_LOG": {
+							"value": {
+								"value": "@activity('CopySTGtoCore').output.logFilePath",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Result": {
+							"value": "S",
+							"type": "String"
+						},
+						"ROW_COUNT": {
+							"value": {
+								"value": "@activity('CopySTGtoCore').output.rowsCopied",
+								"type": "Expression"
+							},
+							"type": "Int64"
+						},
+						"TABLE_NAME": {
+							"value": {
+								"value": "@variables('TABLE_NAME')",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Trigger_Time": {
+							"value": {
+								"value": "@convertTimeZone(utcnow(),'UTC','Eastern Standard Time')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Trigger_Time_Start": {
+							"value": {
+								"value": "@convertTimeZone(pipeline().TriggerTime,'UTC','Eastern Standard Time')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"DAT_ROW_COUNT": {
+							"value": {
+								"value": "@variables('DAT_ROW_COUNT')",
+								"type": "Expression"
+							},
+							"type": "Int64"
+						}
+					}
+				}
+			},
+			{
+				"name": "FAIL_SAFE",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "UPDATE_F",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT * FROM DBO.FAIL_SAFE",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "UPDATE_F",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "DELETE_REV_GEAR_DAILY_REC_IF_ANY",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "IS_TABLE_DATA_BY_DATE_DRIVER",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "ForEachDLMofTABLE",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "DAT_TO_DLF_SPARK",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "ForEachDATofTABLE",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "TRUNCATE",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "LookupCTL_METADATA",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "IF_MONTHLY",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Delete All DAT",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "CopySTGtoCore",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "IS_DELETE_TABLE_DATA_HISTORY",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "IS_DIMN",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "CURRENT_TABLES_PROC",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.20:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 90,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[ADLS_STGValidation_Spark_SP]",
+					"storedProcedureParameters": {
+						"REJECT_COUNT": {
+							"value": null,
+							"type": "Int64"
+						},
+						"REJECT_LOG": {
+							"value": null,
+							"type": "String"
+						},
+						"Result": {
+							"value": "F",
+							"type": "String"
+						},
+						"ROW_COUNT": {
+							"value": null,
+							"type": "Int64"
+						},
+						"TABLE_NAME": {
+							"value": {
+								"value": "@variables('TABLE_NAME')",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"Trigger_Time": {
+							"value": {
+								"value": "@convertTimeZone(utcnow(),'UTC','Eastern Standard Time')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"Trigger_Time_Start": {
+							"value": {
+								"value": "@convertTimeZone(pipeline().TriggerTime,'UTC','Eastern Standard Time')",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"DAT_ROW_COUNT": {
+							"value": {
+								"value": "@variables('DAT_ROW_COUNT')",
+								"type": "Expression"
+							},
+							"type": "Int64"
+						}
+					}
+				}
+			},
+			{
+				"name": "Delete All DAT",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "ForEachDLMofTABLE",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"enableLogging": false,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"wildcardFileName": "*.DAT",
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "SUM_DAT_ROWS",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "ForEachDATofTABLE",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 90,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT CAST(SUM(CAST(value AS bigint)) as varchar) AS DAT_ROW_COUNT FROM STRING_SPLIT(SUBSTRING('@{variables('DAT_ROW_COUNT_ARRAY')}', 2, LEN('@{variables('DAT_ROW_COUNT_ARRAY')}')-2), ',');",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Set DAT_ROW_COUNT",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "SUM_DAT_ROWS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "DAT_ROW_COUNT",
+					"value": {
+						"value": "@activity('SUM_DAT_ROWS').output.value[0].DAT_ROW_COUNT",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "FAIL_SAFE_MATCH",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Execute DELETE DAT FS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "IF(@{variables('DAT_ROW_COUNT')} != @{activity('CopySTGtoCore').output.rowsCopied})\nBEGIN\nSELECT * FROM DBO.ABC\nEND\nELSE\nBEGIN\nSELECT TOP(1)* FROM DBO.ADLS_STGVALIDATION_SPARK WHERE 1=0\nEND",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Execute DELETE DAT FS",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "UPDATE_S",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitOnCompletion": true,
+					"parameters": {
+						"TABLE_NAME": {
+							"value": "@variables('TABLE_NAME')",
+							"type": "Expression"
+						},
+						"JOB_TYPE": {
+							"value": "@variables('JOB_TYPE')",
+							"type": "Expression"
+						}
+					}
 				}
 			}
 		],
-		"annotations": []
-	}
+		"parameters": {
+			"TABLE_NAME": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"JOB_TYPE": {
+				"type": "String"
+			},
+			"TABLE_NAME": {
+				"type": "String"
+			},
+			"DAT_ROW_COUNT_ARRAY": {
+				"type": "Array",
+				"defaultValue": []
+			},
+			"DAT_ROW_COUNT": {
+				"type": "String",
+				"defaultValue": "0"
+			},
+			"REJECT_LOG_ARRAY": {
+				"type": "Array",
+				"defaultValue": []
+			}
+		},
+		"folder": {
+			"name": "ALL_GENERIC"
+		},
+		"annotations": [
+			"@pipeline().parameters.TABLE_NAME"
+		],
+		"lastPublishTime": "2022-09-13T13:34:58Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
 }
